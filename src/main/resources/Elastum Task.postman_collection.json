@@ -1,0 +1,23 @@
+{
+	"info": {
+		"_postman_id": "a9e83e80-909b-42d1-b53b-49ecf9fbb831",
+		"name": "Elastum Task",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Person",
+			"item": [
+				{
+					"name": "GetAllPersons",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": null
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
