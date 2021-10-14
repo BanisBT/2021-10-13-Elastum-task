@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "a9e83e80-909b-42d1-b53b-49ecf9fbb831",
+		"_postman_id": "9c37e7c3-ff54-426e-bee2-292973f148c0",
 		"name": "Elastum Task",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -13,7 +13,45 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": null
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetPersonByIdIfExist",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/persons/3",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"persons",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetPersonByIdIfNotExist Copy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/persons/3",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"persons",
+								"3"
+							]
+						}
 					},
 					"response": []
 				}

@@ -1,6 +1,7 @@
 package com.tbarauskas.elastumtask.service;
 
 import com.tbarauskas.elastumtask.entity.Person;
+import com.tbarauskas.elastumtask.exception.PersonNotFoundException;
 import com.tbarauskas.elastumtask.repository.PersonRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,11 @@ public class PersonService {
         this.personRepository = personRepository;
     }
 
-    public List<Person> getAllPersons(){
+    public Person getPersonById(Long id) {
+        return personRepository.getPersonById(id).orElseThrow(() -> new PersonNotFoundException(id));
+    }
+
+    public List<Person> getAllPersons() {
         return personRepository.findAll();
     }
 }
