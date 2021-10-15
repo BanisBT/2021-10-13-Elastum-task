@@ -1,5 +1,6 @@
 package com.tbarauskas.elastumtask.controller;
 
+import com.tbarauskas.elastumtask.dto.PersonCreateResponseDTO;
 import com.tbarauskas.elastumtask.dto.PersonRequestDTO;
 import com.tbarauskas.elastumtask.dto.PersonResponseDTO;
 import com.tbarauskas.elastumtask.entity.Person;
@@ -43,9 +44,9 @@ public class PersonController {
 
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public PersonResponseDTO createPerson(@Valid @RequestBody PersonRequestDTO personDTO){
+    public PersonCreateResponseDTO createPerson(@Valid @RequestBody PersonRequestDTO personDTO){
         Person createdPerson = personService.createPerson(modelMapper.map(personDTO, Person.class));
         log.debug("Person - {} has been created", createdPerson);
-        return modelMapper.map(createdPerson, PersonResponseDTO.class);
+        return modelMapper.map(createdPerson, PersonCreateResponseDTO.class);
     }
 }

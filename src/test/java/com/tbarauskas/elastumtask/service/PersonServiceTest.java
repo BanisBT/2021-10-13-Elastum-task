@@ -48,4 +48,11 @@ class PersonServiceTest {
 
         assertThrows(PersonNotFoundException.class, () -> personService.getPersonById(101L));
     }
+
+    @Test
+    void testCreatePerson() {
+        personService.createPerson(person);
+
+        verify(personRepository, times(1)).save(person);
+    }
 }
