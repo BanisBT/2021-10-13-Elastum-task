@@ -7,6 +7,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Data
 @Entity
@@ -33,4 +34,24 @@ public class Person {
     @UpdateTimestamp
     @Column(name = "updated")
     private LocalDateTime updated;
+
+    @Transient
+    private String kinship;
+
+    public boolean isMale(){
+        return surname.charAt(surname.length() - 1) == 's';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Person)) return false;
+        Person person = (Person) o;
+        return getId().equals(person.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
+    }
 }

@@ -1,6 +1,7 @@
 package com.tbarauskas.elastumtask.controller;
 
 import com.tbarauskas.elastumtask.dto.PersonCreateResponseDTO;
+import com.tbarauskas.elastumtask.dto.PersonRelativeDTO;
 import com.tbarauskas.elastumtask.dto.PersonRequestDTO;
 import com.tbarauskas.elastumtask.dto.PersonResponseDTO;
 import com.tbarauskas.elastumtask.entity.Person;
@@ -39,6 +40,14 @@ public class PersonController {
     public List<PersonResponseDTO> getAllPersons(){
         return personService.getAllPersons().stream()
                 .map(person -> modelMapper.map(person, PersonResponseDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/relative/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<PersonRelativeDTO> getPersonsRelatives(@PathVariable Long id){
+        return personService.getPersonsRelatives(id).stream()
+                .map(person -> modelMapper.map(person, PersonRelativeDTO.class))
                 .collect(Collectors.toList());
     }
 

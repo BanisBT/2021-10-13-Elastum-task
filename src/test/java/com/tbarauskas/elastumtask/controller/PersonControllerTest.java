@@ -1,6 +1,5 @@
 package com.tbarauskas.elastumtask.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tbarauskas.elastumtask.dto.PersonCreateResponseDTO;
@@ -43,20 +42,19 @@ class PersonControllerTest {
 
     @Test
     void testGetAllPersons() throws Exception {
-        MvcResult result = mockMvc.perform(get("/persons/"))
+        MvcResult result = mockMvc.perform(get("/persons/list"))
                 .andExpect(status().isOk())
                 .andReturn();
 
         List<PersonResponseDTO> personDTOList = objectMapper.readValue(result.getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+                new TypeReference<>() {});
 
-        assertEquals(4, personDTOList.size());
+        assertEquals(19, personDTOList.size());
     }
 
     @Test
     void testGetPerson() throws Exception {
-        MvcResult result = mockMvc.perform(get("/persons/{id}", 3L))
+        MvcResult result = mockMvc.perform(get("/persons/{id}", 4L))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -137,8 +135,8 @@ class PersonControllerTest {
         PersonRequestDTO personDTO = new PersonRequestDTO("Jurgita", "Jurgelenaite Meidiene", date);
 
         MvcResult result = mockMvc.perform(post("/persons/create")
-        .content(objectMapper.writeValueAsString(personDTO))
-        .contentType(MediaType.APPLICATION_JSON))
+                .content(objectMapper.writeValueAsString(personDTO))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
@@ -146,5 +144,40 @@ class PersonControllerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), error.getStatus());
         assertEquals("Surname can be just from letters and symbol '-' if it's double surname", error.getMessage());
+    }
+
+    @Test
+    void testCreatePersonNotValidSurnameBySymbolsNumber() throws Exception {
+        PersonRequestDTO personDTO = new PersonRequestDTO("Jurgita", "Jurgelenaite-Meidiene-Justa", date);
+
+        MvcResult result = mockMvc.perform(post("/persons/create")
+                .content(objectMapper.writeValueAsString(personDTO))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        ErrorHandler error = objectMapper.readValue(result.getResponse().getContentAsString(), ErrorHandler.class);
+
+        assertEquals(HttpStatus.BAD_REQUEST.value(), error.getStatus());
+        assertEquals("Surname can't be more then two words and no '-' symbol allowed in front or end of surname",
+                error.getMessage());
+    }
+
+    @Test
+    void testCreatePersonNotValidNameBySymbolsNumber() throws Exception {
+        PersonRequestDTO personDTO = new PersonRequestDTO("Jurgita Paulina Matilda",
+                "Jurgelenaite-Meidiene", date);
+
+        MvcResult result = mockMvc.perform(post("/persons/create")
+                .content(objectMapper.writeValueAsString(personDTO))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        ErrorHandler error = objectMapper.readValue(result.getResponse().getContentAsString(), ErrorHandler.class);
+
+        assertEquals(HttpStatus.BAD_REQUEST.value(), error.getStatus());
+        assertEquals("Name can't be more then two words and no spacing allowed in front or end of name",
+                error.getMessage());
     }
 }

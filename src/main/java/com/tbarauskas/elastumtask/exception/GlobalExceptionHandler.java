@@ -21,6 +21,28 @@ public class GlobalExceptionHandler {
                 String.format("Person with id - %d is not found", e.getId())), HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(MoreThenOneAllowedSymbolInNameException.class)
+    public ResponseEntity<ErrorHandler> exceptionHandler(MoreThenOneAllowedSymbolInNameException e) {
+        log.debug("Invalid name entered for creating Person");
+        return new ResponseEntity<>(new ErrorHandler(HttpStatus.BAD_REQUEST.value(),
+                "Name can't be more then two words and no spacing allowed in front or end of name"),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoRelativeFindForCurrentPersonException.class)
+    public ResponseEntity<ErrorHandler> exceptionHandler(NoRelativeFindForCurrentPersonException e){
+        return new ResponseEntity<>(new ErrorHandler(HttpStatus.BAD_REQUEST.value(), "No relative found"),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MoreThenOneAllowedSymbolInSurnameException.class)
+    public ResponseEntity<ErrorHandler> exceptionHandler(MoreThenOneAllowedSymbolInSurnameException e) {
+        log.debug("Invalid surname entered for creating Person");
+        return new ResponseEntity<>(new ErrorHandler(HttpStatus.BAD_REQUEST.value(),
+                "Surname can't be more then two words and no '-' symbol allowed in front or end of surname"),
+                HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorHandler> exceptionHandler(HttpMessageNotReadableException e) {
         log.debug("Bad date format entered");
@@ -32,7 +54,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorHandler> exceptionHandler(MethodArgumentNotValidException e) {
         return new ResponseEntity<>(new ErrorHandler(HttpStatus.BAD_REQUEST.value(),
                 e.getBindingResult().getFieldErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage)
-                        .collect(java.util.stream.Collectors.joining(", "))),
+                        .collect(java.util.stream.Collectors.joining(", \n"))),
                 HttpStatus.BAD_REQUEST);
     }
 

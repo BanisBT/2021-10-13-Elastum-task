@@ -11,8 +11,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PersonServiceTest {
@@ -47,12 +47,5 @@ class PersonServiceTest {
         when(personRepository.getPersonById(any(Long.class))).thenReturn(Optional.empty());
 
         assertThrows(PersonNotFoundException.class, () -> personService.getPersonById(101L));
-    }
-
-    @Test
-    void testCreatePerson() {
-        personService.createPerson(person);
-
-        verify(personRepository, times(1)).save(person);
     }
 }
