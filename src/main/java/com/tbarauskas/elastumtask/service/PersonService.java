@@ -3,10 +3,12 @@ package com.tbarauskas.elastumtask.service;
 import com.tbarauskas.elastumtask.entity.Person;
 import com.tbarauskas.elastumtask.exception.NoRelativeFindForCurrentPersonException;
 import com.tbarauskas.elastumtask.exception.PersonNotFoundException;
+import com.tbarauskas.elastumtask.model.Kinship;
 import com.tbarauskas.elastumtask.repository.PersonRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -20,9 +22,12 @@ public class PersonService {
 
     private final PersonRepository personRepository;
 
+    private final Person tempPerson;
+
     public PersonService(NameSymbolService nameSymbolService, PersonRepository personRepository) {
         this.nameSymbolService = nameSymbolService;
         this.personRepository = personRepository;
+        this.tempPerson = personRepository.getPersonById(1L).orElseThrow(RuntimeException::new);
     }
 
     public Person getPersonById(Long id) {
@@ -39,98 +44,187 @@ public class PersonService {
     }
 
     public List<Person> getPersonsRelatives(Long id) {
-        Collection<Person> relativeList = new HashSet<>();
+        Collection<Person> relativeSet = new HashSet<>();
         Person person = getPersonById(id);
 
-        if (person.isMale()) {
-            relativeList.add(getPersonsWife(nameSymbolService.getSurnameForWifeFromHusband(person.getSurname()),
-                    person.getBirthDate()));
-            relativeList.addAll(getPersonsBrothers(person.getSurname(), person.getBirthDate()));
-            relativeList.addAll(getPersonsSisters(person.getSurname(), person.getBirthDate()));
-            relativeList.addAll(getPersonsSons(person.getSurname(), person.getBirthDate()));
-            relativeList.addAll(getPersonsDaughters(person.getSurname(), person.getBirthDate()));
-            relativeList.add(getPersonsFather(person.getSurname(), person.getBirthDate()));
-        } else {
+        String surname = person.getSurname();
+        LocalDate birthDate = person.getBirthDate();
 
+        if (person.isMale()) {
+            relativeSet = getMalePersonsSetRelative(surname, birthDate);
+        } else if (person.isFemaleWithHusbandSurname()) {
+            relativeSet = getFemalesWithHusbandSurnameSetRelative(surname, birthDate);
+
+//            Jei moteris su mergautine pavarde
+        } else if (person.isFemaleWithFamilySurname()) {
+
+//            Jei moteris su dviem pavardemis
+        } else if (person.isFemaleWithDoubleSurname()) {
+
+//            Padaryti Vyro, Sunu, Anuku pavarde -as (is antros pavardes)
+//            Padaryti Dukru, anukiu pavarde -aite, -yte, ute (is antros pavardes)
+//            Padaryti mamos ir mociutes pavarde -iene (is pirmos pavardes)
+//            Padaryti seseru pavarde (pirmoji pavarde)
+//            Padaryti tevo, senelio ir broliu pavarde -as(is pirmos pavarde)
+
+//            Rasti Vyra, sunus ir anukus
+//            Dukras, anukes
+//            Mama ir mociute
+//            Teva, seneli ir brolius
+//            Seses
         }
 
-        relativeList.remove(person);
-        if (relativeList.size() <= 1) {
+        relativeSet.remove(person);
+        relativeSet.remove(tempPerson);
+
+        if (relativeSet.size() == 0) {
             throw new NoRelativeFindForCurrentPersonException();
         }
-        return List.copyOf(relativeList);
+        return List.copyOf(relativeSet);
     }
 
-    private Person getPersonsWife(String surname, LocalDate birthDate) {
-        Person wife = personRepository.getPersonByBirthDateBetweenAndSurnameContainingIgnoreCase(birthDate.minusYears(15),
-                birthDate.plusYears(15), surname).orElse(null);
+    private Collection<Person> getMalePersonsSetRelative(String surname, LocalDate birthDate) {
+        Collection<Person> relativeSet = new HashSet<>();
+        String surnameFromMaleToWoman = nameSymbolService.getSurnameForWifeFromHusband(surname);
+        String surnameFromMaleToGirl = nameSymbolService.getSurnameForDaughterOrSisterFromFather(surname);
 
-        if (wife != null) {
-            wife.setKinship(WIFE.name());
-            return wife;
+        relativeSet.add(getPersonsFemaleRelative(surnameFromMaleToWoman, birthDate.minusYears(15),
+                birthDate.plusYears(15), WIFE));
+        relativeSet.add(getPersonsFemaleRelative(surnameFromMaleToWoman, birthDate.minusYears(40),
+                birthDate.minusYears(15).minusDays(1), MOTHER));
+        relativeSet.addAll(getPersonsListMaleRelative(surname, birthDate, BROTHER));
+        relativeSet.addAll(getPersonsListFemaleRelative(surnameFromMaleToGirl,
+                birthDate.minusYears(15), birthDate.plusYears(15), SISTER));
+        relativeSet.add(getPersonsMaleRelative(surname, birthDate, FATHER));
+
+        relativeSet.addAll(getPersonsListRelative(surname, surnameFromMaleToGirl, birthDate));
+
+        return relativeSet;
+    }
+
+    private Collection<Person> getFemalesWithHusbandSurnameSetRelative(String surname, LocalDate birthDate) {
+        Collection<Person> relativeSet = new HashSet<>();
+
+        String surnameFromWomanToMan = nameSymbolService.getWordWithNewInflexion(surname, "ienė", "as");
+        String surnameFromWomanToGirl = nameSymbolService.getWordWithNewInflexion
+                (surname, "ienė", "aitė");
+
+        relativeSet.add(getPersonsMaleRelative(surnameFromWomanToMan, birthDate, HUSBAND));
+        relativeSet.addAll(getPersonsListRelative(surnameFromWomanToMan, surnameFromWomanToGirl, birthDate));
+
+        return relativeSet;
+    }
+
+    private Collection<Person> getFemalesWithFamilySurnameRelatives(String surname, LocalDate birthDate) {
+        Collection<Person> relativeSet = new HashSet<>();
+
+        //            Seseru pavarde ta pati
+//            Padaryti tevo, broliu ir senelio pavarde -as
+        String surnameForMale = nameSymbolService.getSurnameForRelativeFromGirl(surname, HUSBAND);
+//            Padaryti mamos ir mociutes pavardes -iene
+        String surnameForWoman = nameSymbolService.getSurnameForRelativeFromGirl(surname, MOTHER);
+
+//            Rasti Teva, seneli ir brolius
+        relativeSet.addAll(getPersonsListMaleRelative(surnameForMale, birthDate, BROTHER));
+        relativeSet.add(getPersonsMaleRelative(surnameForMale, birthDate, FATHER));
+        relativeSet.add(getPersonsMaleRelative(surnameForMale, birthDate, GRANDFATHER));
+//            Mama ir mociute
+//            Seses
+        relativeSet.addAll(getPersonsListFemaleRelative(surname, birthDate.minusYears(15), birthDate.plusYears(15), SISTER));
+        return null;
+    }
+
+    private List<Person> getPersonsListRelative(String surnameMale, String surnameFemale, LocalDate birthDate) {
+        List<Person> relativeList = new ArrayList<>();
+
+        relativeList.addAll(getPersonsListMaleRelative(surnameMale, birthDate, SON));
+        relativeList.addAll(getPersonsListMaleRelative(surnameMale, birthDate, GRANDSON));
+        relativeList.addAll(getPersonsListFemaleRelative(surnameFemale, birthDate.plusYears(15), birthDate.plusYears(40),
+                DAUGHTER));
+        relativeList.addAll(getPersonsListFemaleRelative(surnameFemale, birthDate.plusYears(40).plusDays(1),
+                birthDate.plusYears(222), GRANDDAUGHTER));
+
+        return relativeList;
+    }
+
+    private Person getPersonsMaleRelative(String surname, LocalDate birthDate, Kinship kinship) {
+        LocalDate from = null;
+        LocalDate to = null;
+
+        if (kinship.equals(HUSBAND)) {
+            from = birthDate.minusYears(15);
+            to = birthDate.plusYears(15);
+        } else if (kinship.equals(FATHER)) {
+            from = birthDate.minusYears(40);
+            to = birthDate.minusYears(15).minusDays(1);
+        } else if (kinship.equals(GRANDFATHER)) {
+            from = birthDate.minusYears(999);
+            to = birthDate.minusYears(40).minusDays(1);
         }
-        return null;
-    }
 
-    private List<Person> getPersonsBrothers(String surname, LocalDate birthDate) {
-        List<Person> brotherList = getPersonsByBirthDateBetweenAndSurname(surname, birthDate.minusYears(15),
-                birthDate.plusYears(15));
-        brotherList.forEach(person -> person.setKinship(BROTHER.name()));
-        return brotherList;
-    }
+        Person maleRelative = getPersonByBirthDateBetweenAndSurname(surname, from, to);
 
-    private List<Person> getPersonsSisters(String surname, LocalDate birthDate) {
-        String surnameForSister = nameSymbolService.getSurnameForDaughterOrSisterFromFather(surname);
-        List<Person> sisterList = getPersonsByBirthDateBetweenAndSurname(surnameForSister, birthDate.minusYears(15),
-                birthDate.plusYears(15));
-        sisterList.forEach(person -> person.setKinship(SISTER.name()));
-        return sisterList;
-    }
-
-    private List<Person> getPersonsSons(String surname, LocalDate birthDate) {
-        List<Person> sonsList = getPersonsByBirthDateBetweenAndSurname(surname, birthDate.plusYears(15),
-                birthDate.plusYears(40));
-        sonsList.forEach(person -> person.setKinship(SON.name()));
-        return sonsList;
-    }
-
-    private List<Person> getPersonsDaughters(String surname, LocalDate birthdate) {
-        String surnameForDaughter = nameSymbolService.getSurnameForDaughterOrSisterFromFather(surname);
-        List<Person> daughterList = getPersonsByBirthDateBetweenAndSurname(surnameForDaughter,
-                birthdate.plusYears(15), birthdate.plusYears(40));
-        daughterList.forEach(person -> person.setKinship(DAUGHTER.name()));
-        return daughterList;
-    }
-
-    private Person getPersonsFather(String surname, LocalDate birthdate) {
-        Person father = getPersonByBirthDateBetweenAndSurname(surname, birthdate.plusYears(15), birthdate.plusYears(40));
-
-        if (father != null) {
-            father.setKinship(FATHER.name());
-            return father;
+        if (maleRelative != null) {
+            maleRelative.setKinship(kinship.name());
+            return maleRelative;
         }
-        return null;
+        return tempPerson;
     }
 
-    private Person getPersonsMother(String surname, LocalDate birthDate) {
-        return null;
+    private Person getPersonsFemaleRelative(String surname, LocalDate from, LocalDate to, Kinship kinship) {
+        List<Person> femaleRelativeList = getPersonsByBirthDateBetweenAndSurnameContainingIgnoreCase(surname, from, to);
+        for (Person person : femaleRelativeList) {
+            if (person.isFemaleWithDoubleSurname()
+                    && nameSymbolService.getNeededSurname(surname, 2).equals(surname)) {
+                person.setKinship(kinship.name());
+                return person;
+            } else if (person.getSurname().equals(surname)) {
+                person.setKinship(kinship.name());
+                return person;
+            }
+        }
+        return tempPerson;
     }
 
-    private List<Person> getPersonsByBirthDateBetweenAndSurname(String surname, LocalDate from, LocalDate to) {
-        return personRepository.getPersonsByBirthDateBetweenAndSurnameContainingIgnoreCase(from, to, surname);
+    private List<Person> getPersonsListMaleRelative(String surname, LocalDate birthDate, Kinship kinship) {
+        LocalDate from = null;
+        LocalDate to = null;
+
+        if (kinship.equals(HUSBAND) | kinship.equals(BROTHER)) {
+            from = birthDate.minusYears(15);
+            to = birthDate.plusYears(15);
+        } else if (kinship.equals(GRANDFATHER)) {
+            from = birthDate.minusYears(999);
+            to = birthDate.minusYears(40).minusDays(1);
+        } else if (kinship.equals(SON)) {
+            from = birthDate.plusYears(15).plusDays(1);
+            to = birthDate.plusYears(40);
+        } else if (kinship.equals(GRANDSON)) {
+            from = birthDate.plusYears(40).plusDays(1);
+            to = birthDate.plusYears(999);
+        }
+
+        List<Person> maleRelativeList = getPersonsByBirthDateBetweenAndSurname(surname, from, to);
+        maleRelativeList.forEach(person -> person.setKinship(kinship.name()));
+        return maleRelativeList;
     }
 
-    private List<Person> getPersonsByBirthDateAfterAndSurname(String surname, LocalDate birthDate) {
-        return personRepository.getPersonsByBirthDateAfterAndSurnameContainingIgnoreCase(birthDate, surname);
-    }
-
-    private Person getPersonByBirthDateAfterAndSurname(String surname, LocalDate birthDate) {
-        return personRepository.getPersonByBirthDateAfterAndSurnameContainingIgnoreCase(birthDate, surname)
-                .orElse(null);
+    private List<Person> getPersonsListFemaleRelative(String surname, LocalDate from, LocalDate to, Kinship kinship) {
+        List<Person> femaleRelativeList = getPersonsByBirthDateBetweenAndSurnameContainingIgnoreCase(surname, from, to);
+        femaleRelativeList.forEach(person -> person.setKinship(kinship.name()));
+        return femaleRelativeList;
     }
 
     private Person getPersonByBirthDateBetweenAndSurname(String surname, LocalDate from, LocalDate to) {
-        return personRepository.getPersonByBirthDateBetweenAndSurnameContainingIgnoreCase(from, to, surname)
-                .orElse(null);
+        return personRepository.getPersonByBirthDateBetweenAndSurname(from, to, surname).orElse(null);
+    }
+
+    private List<Person> getPersonsByBirthDateBetweenAndSurname(String surname, LocalDate from, LocalDate to) {
+        return personRepository.getPersonsByBirthDateBetweenAndSurname(from, to, surname);
+    }
+
+    private List<Person> getPersonsByBirthDateBetweenAndSurnameContainingIgnoreCase(String surname, LocalDate from,
+                                                                                    LocalDate to) {
+        return personRepository.getPersonsByBirthDateBetweenAndSurnameContainingIgnoreCase(from, to, surname);
     }
 }

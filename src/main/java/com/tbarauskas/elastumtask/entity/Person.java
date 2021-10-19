@@ -39,7 +39,20 @@ public class Person {
     private String kinship;
 
     public boolean isMale(){
-        return surname.charAt(surname.length() - 1) == 's';
+        return surname.endsWith("s");
+    }
+
+    public boolean isFemaleWithDoubleSurname() {
+        return surname.contains("-");
+    }
+
+    public boolean isFemaleWithHusbandSurname() {
+        return surname.endsWith("ienė") && !surname.contains("-");
+    }
+
+    public boolean isFemaleWithFamilySurname() {
+        return surname.endsWith("utė") | surname.endsWith("ytė") |
+                surname.endsWith("aitė");
     }
 
     @Override

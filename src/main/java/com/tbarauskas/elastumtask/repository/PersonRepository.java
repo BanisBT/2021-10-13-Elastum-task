@@ -13,12 +13,9 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
 
     Optional<Person> getPersonById(Long id);
 
-    Optional<Person> getPersonByBirthDateBetweenAndSurnameContainingIgnoreCase(LocalDate from, LocalDate to,
-                                                                               String surname);
-
-    Optional<Person> getPersonByBirthDateAfterAndSurnameContainingIgnoreCase(LocalDate birthDate, String surname);
+    Optional<Person> getPersonByBirthDateBetweenAndSurname(LocalDate from, LocalDate to, String surname);
 
     List<Person> getPersonsByBirthDateBetweenAndSurnameContainingIgnoreCase(LocalDate from, LocalDate to, String surname);
 
-    List<Person> getPersonsByBirthDateAfterAndSurnameContainingIgnoreCase(LocalDate from, String surname);
+    List<Person> getPersonsByBirthDateBetweenAndSurname(LocalDate from, LocalDate to, String surname);
 }

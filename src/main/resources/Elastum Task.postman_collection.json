@@ -14,7 +14,33 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": ""
+							"raw": "{{url}}/persons/list",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"persons",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetRelatives",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/persons/relative/2",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"persons",
+								"relative",
+								"2"
+							]
 						}
 					},
 					"response": []
@@ -43,13 +69,94 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{url}}/persons/3",
+							"raw": "{{url}}/persons/13",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"persons",
-								"3"
+								"13"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreatePerson",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"yuhguy ktdhgf\",\n    \"surname\": \"Klevas-fytd\",\n    \"birthDate\": \"2000-05-23\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/persons/create",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"persons",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreatePersonNotValid",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Algis8\",\n    \"surname\": \"Klevas YU\",\n    \"birthDate\": \"2000-05/23\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/persons/create",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"persons",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreatePersonNotValidNameWordsSize",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Algis Balys Jurgis\",\n    \"surname\": \"Klevas\",\n    \"birthDate\": \"2000-05-23\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/persons/create",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"persons",
+								"create"
 							]
 						}
 					},
