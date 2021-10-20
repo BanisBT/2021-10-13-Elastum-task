@@ -9,7 +9,41 @@ import org.springframework.util.StringUtils;
 @Service
 public class NameSymbolService {
 
-    public String getNeededSurname(String surname, int firstOrSecond) {
+    private final String specialPerson = "Special persons";
+
+    private final String iene = "ienė";
+
+    private final String as = "as";
+
+    private final String yte = "ytė";
+
+    private final String ute = "utė";
+
+    private final String aite = "aitė";
+
+    public String getSurnameForRelativeSearch(String surname, Kinship fromKinship, Kinship toKinship) {
+
+        if (fromKinship.isMale()) {
+            if (toKinship.isFemaleWithHusbandSurname()) {
+                return getSurnameForWomanFromHusband(surname);
+            } else if (toKinship.isFemaleWIthFamilySurname()) {
+                return getSurnameForGirlFromFatherOrWoman(surname);
+            }
+        } else if (fromKinship.isFemaleWithHusbandSurname()) {
+            if (toKinship.isMale()) {
+                return getWordWithNewInflexion(surname, iene, as);
+            } else if (toKinship.isFemaleWIthFamilySurname()) {
+                return getSurnameForGirlFromFatherOrWoman(surname);
+            }
+        } else if (fromKinship.isFemaleWIthFamilySurname()) {
+            if (toKinship.isMale() | toKinship.isFemaleWithHusbandSurname()) {
+                return getSurnameForRelativeFromGirl(surname, toKinship);
+            }
+        }
+        return specialPerson;
+    }
+
+    public String getNeededSurnameFromDouble(String surname, int firstOrSecond) {
         String[] surnameArray = surname.split("-", 2);
 
         if (StringUtils.countOccurrencesOf(surname, "-") == 0) {
@@ -27,57 +61,53 @@ public class NameSymbolService {
         isCorrectSurname(surname);
     }
 
-    public String getWordWithNewInflexion(String word, String oldInflexion, String newInflexion) {
+    private String getWordWithNewInflexion(String word, String oldInflexion, String newInflexion) {
         return word.substring(0, word.length() - oldInflexion.length()) + newInflexion;
     }
 
-    public String getSurnameForRelativeFromGirl(String surname, Kinship kinship) {
+    private String getSurnameForRelativeFromGirl(String surname, Kinship kinship) {
         String kinshipInflexion;
 
-        if (kinship.equals(Kinship.HUSBAND)) {
-            kinshipInflexion = "as";
+        if (kinship.equals(Kinship.HUSBAND) | kinship.equals(Kinship.FATHER)) {
+            kinshipInflexion = as;
         } else {
-            kinshipInflexion = "ienė";
+            kinshipInflexion = iene;
         }
 
-        if (surname.endsWith("aitė")) {
-            return getWordWithNewInflexion(surname, "aitė", kinshipInflexion);
-        } else if (surname.endsWith("ytė")) {
-            return getWordWithNewInflexion(surname, "ytė", kinshipInflexion);
-        } else if (surname.endsWith("utė")) {
-            return getWordWithNewInflexion(surname, "utė", kinshipInflexion);
+        if (surname.endsWith(aite)) {
+            return getWordWithNewInflexion(surname, aite, kinshipInflexion);
+        } else if (surname.endsWith(yte)) {
+            return getWordWithNewInflexion(surname, yte, kinshipInflexion);
+        } else if (surname.endsWith(ute)) {
+            return getWordWithNewInflexion(surname, ute, kinshipInflexion);
         }
-        return "Special person";
+        return specialPerson;
     }
 
-    public String getSurnameForWifeFromHusband(String surname) {
+    private String getSurnameForWomanFromHusband(String surname) {
         char thirdFromBehindLetterOfSurname = surname.charAt(surname.length() - 3);
 
         if (StringUtils.countOccurrencesOf("aeėuūio", String.valueOf(thirdFromBehindLetterOfSurname)) == 0) {
-            return surname.substring(0, surname.length() - 2) + "ienė";
+            return surname.substring(0, surname.length() - 2) + iene;
         } else {
-            return surname.substring(0, surname.length() - 3) + "ienė";
+            return surname.substring(0, surname.length() - 3) + iene;
         }
     }
 
-    public String getSurnameForDaughterOrSisterFromFather(String surname) {
+    private String getSurnameForGirlFromFatherOrWoman(String surname) {
         int length = surname.length();
 
-        if (surname.substring(length - 2).equals("as")) {
-            return surname.substring(0, length - 2) + "aitė";
+        if (surname.substring(length - 2).equals(as)) {
+            return surname.substring(0, length - 2) + aite;
         } else if (surname.substring(length - 2).equals("is") | surname.substring(length - 2).equals("ys")) {
-            return surname.substring(0, length - 2) + "ytė";
+            return surname.substring(0, length - 2) + yte;
         } else if (surname.substring(length - 2).equals("us")) {
-            return surname.substring(0, length - 2) + "utė";
-        } else if (surname.substring(length - 4).equals("ienė")) {
-            return (surname.substring(0, length - 4) + "aitė");
+            return surname.substring(0, length - 2) + ute;
+        } else if (surname.substring(length - 4).equals(iene)) {
+            return (surname.substring(0, length - 4) + aite);
         }
 
-        return "Special person";
-    }
-
-    public String getSurnameForMotherOrSisterFromFemale(String surname) {
-        return null;
+        return specialPerson;
     }
 
     private void isCorrectName(String name) {
