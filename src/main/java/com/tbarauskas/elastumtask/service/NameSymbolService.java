@@ -29,12 +29,14 @@ public class NameSymbolService {
             } else if (toKinship.isFemaleWIthFamilySurname()) {
                 return getSurnameForGirlFromFatherOrWoman(surname);
             }
+
         } else if (fromKinship.isFemaleWithHusbandSurname()) {
             if (toKinship.isMale()) {
                 return getWordWithNewInflexion(surname, iene, as);
             } else if (toKinship.isFemaleWIthFamilySurname()) {
                 return getSurnameForGirlFromFatherOrWoman(surname);
             }
+
         } else if (fromKinship.isFemaleWIthFamilySurname()) {
             if (toKinship.isMale() | toKinship.isFemaleWithHusbandSurname()) {
                 return getSurnameForRelativeFromGirl(surname, toKinship);
@@ -68,7 +70,7 @@ public class NameSymbolService {
     private String getSurnameForRelativeFromGirl(String surname, Kinship kinship) {
         String kinshipInflexion;
 
-        if (kinship.equals(Kinship.HUSBAND) | kinship.equals(Kinship.FATHER)) {
+        if (kinship.equals(Kinship.HUSBAND) | kinship.equals(Kinship.FATHER) | kinship.equals(Kinship.BROTHER)) {
             kinshipInflexion = as;
         } else {
             kinshipInflexion = iene;
