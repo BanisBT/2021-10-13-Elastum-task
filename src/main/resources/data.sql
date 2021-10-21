@@ -11,8 +11,7 @@ CREATE TABLE person
 );
 
 INSERT INTO person(name, surname, birth_date)
-VALUES ('TempPerson', 'TempPerson', '1900-01-01'),
-       ('Can not change surname for daughter seartch', 'Special person', '1900-01-01'),
+VALUES ('Can not change surname for daughter seartch', 'Special person', '1900-01-01'),
        ('Tomas', 'Barauskas', '1984-05-23'),
        ('Tinka', 'Barauskienė', '1964-05-23'),
        ('Netinka', 'Barauskienėnienė', '1964-05-23'),
@@ -32,7 +31,15 @@ VALUES ('TempPerson', 'TempPerson', '1900-01-01'),
        ('DukteSuDvigubaPavarde', 'Bareikytė-Barauskė', '2010-05-23'),
        ('Sunus', 'Bareikis', '2010-05-23'),
        ('Tevas', 'Bareikis', '1958-05-23'),
-       ('Anukas', 'Bareikis', '2040-05-23')
+       ('Anukas', 'Bareikis', '2040-05-23'),
+       ('PersonBetweenDate', 'right', '2077-05-23'),
+       ('PersonBetweenDate', 'notRight', '2077-05-23'),
+       ('1', '5', '2099-05-23'),
+       ('2', '8', '2098-05-23'),
+       ('3', '4', '2049-05-23'),
+       ('4', '3', '2097-05-23'),
+       ('5', '1', '2096-05-23'),
+       ('6', '2', '2044-05-23')
 
 
 

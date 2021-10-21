@@ -27,13 +27,6 @@ class PersonServiceTest {
     private PersonService personService;
 
     @Test
-    void testGetAllPersons() {
-        personService.getAllPersons();
-
-        verify(personRepository, times(1)).findAll();
-    }
-
-    @Test
     void testGetPersonById() {
         when(personRepository.getPersonById(2L)).thenReturn(Optional.of(person));
 
@@ -47,5 +40,21 @@ class PersonServiceTest {
         when(personRepository.getPersonById(any(Long.class))).thenReturn(Optional.empty());
 
         assertThrows(PersonNotFoundException.class, () -> personService.getPersonById(101L));
+    }
+
+    @Test
+    void getAllPersons() {
+    }
+
+    @Test
+    void createPerson() {
+    }
+
+    @Test
+    void updatePerson() {
+    }
+
+    @Test
+    void getPersonsRelatives() {
     }
 }

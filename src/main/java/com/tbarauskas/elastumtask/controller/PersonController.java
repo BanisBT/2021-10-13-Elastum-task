@@ -37,18 +37,26 @@ public class PersonController {
 
     @GetMapping("/list")
     @ResponseStatus(HttpStatus.OK)
-    public List<PersonResponseDTO> getAllPersons(){
-        return personService.getAllPersons().stream()
+    public List<PersonResponseDTO> getAllPersons(@RequestParam(required = false, value = "sortBy") String sortBy){
+        return personService.getAllPersons(sortBy).stream()
                 .map(person -> modelMapper.map(person, PersonResponseDTO.class))
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/relative/{id}")
+    @GetMapping("/{id}/relative")
     @ResponseStatus(HttpStatus.OK)
     public List<PersonRelativeDTO> getPersonsRelatives(@PathVariable Long id){
         return personService.getPersonsRelatives(id).stream()
                 .map(person -> modelMapper.map(person, PersonRelativeDTO.class))
                 .collect(Collectors.toList());
+    }
+
+    @PutMapping("/{id}/update")
+    @ResponseStatus(HttpStatus.OK)
+    public PersonResponseDTO setPersonsDetails(@PathVariable Long id, @RequestBody PersonRequestDTO personDTO){
+        Person updatedPerson = personService.updatePerson(id, modelMapper.map(personDTO, Person.class));
+        log.debug("Person - {} has been updated", updatedPerson);
+        return modelMapper.map(updatedPerson, PersonResponseDTO.class);
     }
 
     @PostMapping("/create")
