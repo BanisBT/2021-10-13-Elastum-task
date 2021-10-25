@@ -10,9 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.tbarauskas.elastumtask.model.Kinship.*;
 
@@ -66,63 +65,67 @@ public class PersonService {
     }
 
     public List<Person> getPersonsRelatives(Long id) {
-        Collection<Person> relativeSet = new HashSet<>();
+        List<Person> relatives = new ArrayList<>();
         Person person = getPersonById(id);
 
         String surname = person.getSurname();
         LocalDate birthDate = person.getBirthDate();
 
         if (person.isMale()) {
-            relativeSet = getMalePersonsSetRelatives(surname, birthDate, person);
+            relatives = getMalePersonsSetRelatives(surname, birthDate, person);
         } else if (person.isFemaleWithHusbandSurname()) {
-            relativeSet = getFemalesWithHusbandSurnameSetRelative(surname, birthDate, person);
+            relatives = getFemalesWithHusbandSurnameSetRelative(surname, birthDate, person);
         } else if (person.isFemaleWithFamilySurname()) {
-            relativeSet = getFemalesWithFamilySurnameRelatives(surname, birthDate, person);
+            relatives = getFemalesWithFamilySurnameRelatives(surname, birthDate, person);
         } else if (person.isFemaleWithDoubleSurname()) {
-            relativeSet = getFemalesWithDoubleSurnameRelative(surname, birthDate, person);
+            relatives = getFemalesWithDoubleSurnameRelative(surname, birthDate, person);
         }
 
-        relativeSet.remove(person);
+        List<Person> uniqueRelatives = relatives.stream()
+                .distinct()
+                .collect(Collectors.toList());
 
-        if (relativeSet.size() == 0) {
+        uniqueRelatives.remove(person);
+
+        if (uniqueRelatives.size() == 0) {
             throw new NoRelativeFindForCurrentPersonException();
         }
-        return List.copyOf(relativeSet);
+        return uniqueRelatives;
     }
 
-    private Collection<Person> getMalePersonsSetRelatives(String surname, LocalDate birthDate, Person person) {
-        Collection<Person> relativeSet = new HashSet<>();
+    private List<Person> getMalePersonsSetRelatives(String surname, LocalDate birthDate, Person person) {
+        List<Person> relatives = new ArrayList<>();
         String surnameFromMaleToWoman = nameSymbolService.getSurnameForRelativeSearch(surname, HUSBAND, WIFE);
         String surnameFromMaleToGirl = nameSymbolService.getSurnameForRelativeSearch(surname, FATHER, DAUGHTER);
 
-        relativeSet.add(getPersonsFemaleRelative(surnameFromMaleToWoman, birthDate, WIFE, person));
-        relativeSet.addAll(getPersonsListRelatives(surname, surnameFromMaleToWoman, surnameFromMaleToGirl, birthDate, person));
-        relativeSet.addAll(getPersonsNextGenerationListRelatives(surname, surnameFromMaleToGirl, birthDate, person));
+        relatives.add(getPersonsFemaleRelative(surnameFromMaleToWoman, birthDate, WIFE, person));
+        relatives.addAll(getPersonsListRelatives(surname, surnameFromMaleToWoman, surnameFromMaleToGirl, birthDate, person));
+        relatives.addAll(getPersonsNextGenerationListRelatives(surname, surnameFromMaleToGirl, birthDate, person));
 
-        return relativeSet;
+        return relatives;
     }
 
-    private Collection<Person> getFemalesWithHusbandSurnameSetRelative(String surname, LocalDate birthDate, Person person) {
-        Collection<Person> relativeSet = new HashSet<>();
+    private List<Person> getFemalesWithHusbandSurnameSetRelative(String surname, LocalDate birthDate, Person person) {
+        List<Person> relatives = new ArrayList<>();
 
         String surnameFromWomanToMan = nameSymbolService.getSurnameForRelativeSearch(surname, WIFE, HUSBAND);
         String surnameFromWomanToGirl = nameSymbolService.getSurnameForRelativeSearch(surname, MOTHER, DAUGHTER);
 
-        relativeSet.add(getPersonsMaleRelative(surnameFromWomanToMan, birthDate, HUSBAND, person));
-        relativeSet.addAll(getPersonsNextGenerationListRelatives(surnameFromWomanToMan, surnameFromWomanToGirl, birthDate, person));
+        relatives.add(getPersonsMaleRelative(surnameFromWomanToMan, birthDate, HUSBAND, person));
+        relatives.addAll(getPersonsNextGenerationListRelatives(surnameFromWomanToMan, surnameFromWomanToGirl, birthDate, person));
 
-        return relativeSet;
+        return relatives;
     }
 
-    private Collection<Person> getFemalesWithFamilySurnameRelatives(String surname, LocalDate birthDate, Person person) {
+    private List<Person> getFemalesWithFamilySurnameRelatives(String surname, LocalDate birthDate, Person person) {
         String surnameForMale = nameSymbolService.getSurnameForRelativeSearch(surname, DAUGHTER, FATHER);
         String surnameForWoman = nameSymbolService.getSurnameForRelativeSearch(surname, DAUGHTER, MOTHER);
 
         return getPersonsListRelatives(surnameForMale, surnameForWoman, surname, birthDate, person);
     }
 
-    private Collection<Person> getFemalesWithDoubleSurnameRelative(String surname, LocalDate birthDate, Person person) {
-        Collection<Person> relativeSet = new HashSet<>();
+    private List<Person> getFemalesWithDoubleSurnameRelative(String surname, LocalDate birthDate, Person person) {
+        List<Person> relatives = new ArrayList<>();
 
         String surnameFirstWord = nameSymbolService.getNeededSurnameFromDouble(surname, 1);
         String surnameSecondWord = nameSymbolService.getNeededSurnameFromDouble(surname, 2);
@@ -131,12 +134,12 @@ public class PersonService {
         String surnameForWoman = nameSymbolService.getSurnameForRelativeSearch(surnameFirstWord, DAUGHTER, MOTHER);
         String surnameFamilyForMale = nameSymbolService.getSurnameForRelativeSearch(surnameFirstWord, DAUGHTER, FATHER);
 
-        relativeSet.add(getPersonsMaleRelative(surnameForMale, birthDate, HUSBAND, person));
-        relativeSet.addAll(getPersonsNextGenerationListRelatives(surnameForMale, surnameForGirl, birthDate, person));
-        relativeSet.addAll(getPersonsListRelatives(surnameFamilyForMale, surnameForWoman, surnameFirstWord, birthDate,
+        relatives.add(getPersonsMaleRelative(surnameForMale, birthDate, HUSBAND, person));
+        relatives.addAll(getPersonsNextGenerationListRelatives(surnameForMale, surnameForGirl, birthDate, person));
+        relatives.addAll(getPersonsListRelatives(surnameFamilyForMale, surnameForWoman, surnameFirstWord, birthDate,
                 person));
 
-        return relativeSet;
+        return relatives;
     }
 
     private List<Person> getPersonsNextGenerationListRelatives(String surnameMale, String surnameFemale,
@@ -160,7 +163,7 @@ public class PersonService {
         relativeList.add(getPersonsFemaleRelative(surnameWoman, birthDate, MOTHER, person));
         relativeList.add(getPersonsFemaleRelative(surnameWoman, birthDate, GRANDMOTHER, person));
         relativeList.addAll(getPersonsRelatives(surnameMale, birthDate, BROTHER, person));
-        relativeList.addAll(getPersonsRelatives(surnameMale, birthDate, SISTER, person));
+        relativeList.addAll(getPersonsRelatives(surnameGirl, birthDate, SISTER, person));
 
         return relativeList;
     }

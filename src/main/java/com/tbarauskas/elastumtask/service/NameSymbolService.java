@@ -68,59 +68,63 @@ public class NameSymbolService {
     }
 
     private String getSurnameForRelativeFromGirl(String surname, Kinship kinship) {
-        String kinshipInflexion;
 
         if (kinship.equals(Kinship.HUSBAND) | kinship.equals(Kinship.FATHER) | kinship.equals(Kinship.BROTHER)) {
-            kinshipInflexion = as;
+            if (surname.endsWith(aite)) {
+                return getWordWithNewInflexion(surname, aite, as);
+            } else if (surname.endsWith(yte)) {
+                return getWordWithNewInflexion(surname, yte, "is");
+            } else if (surname.endsWith(ute)) {
+                return getWordWithNewInflexion(surname, ute, "us");
+            }
         } else {
-            kinshipInflexion = iene;
+            if (surname.endsWith(aite)) {
+                return getWordWithNewInflexion(surname, aite, iene);
+            } else if (surname.endsWith(yte)) {
+                return getWordWithNewInflexion(surname, yte, iene);
+            } else if (surname.endsWith(ute)) {
+                return getWordWithNewInflexion(surname, ute, iene);
+            }
         }
-
-        if (surname.endsWith(aite)) {
-            return getWordWithNewInflexion(surname, aite, kinshipInflexion);
-        } else if (surname.endsWith(yte)) {
-            return getWordWithNewInflexion(surname, yte, kinshipInflexion);
-        } else if (surname.endsWith(ute)) {
-            return getWordWithNewInflexion(surname, ute, kinshipInflexion);
-        }
-        return specialPerson;
+            return specialPerson;
     }
 
-    private String getSurnameForWomanFromHusband(String surname) {
-        char thirdFromBehindLetterOfSurname = surname.charAt(surname.length() - 3);
 
-        if (StringUtils.countOccurrencesOf("aeėuūio", String.valueOf(thirdFromBehindLetterOfSurname)) == 0) {
-            return surname.substring(0, surname.length() - 2) + iene;
-        } else {
-            return surname.substring(0, surname.length() - 3) + iene;
-        }
-    }
+        private String getSurnameForWomanFromHusband (String surname){
+            char thirdFromBehindLetterOfSurname = surname.charAt(surname.length() - 3);
 
-    private String getSurnameForGirlFromFatherOrWoman(String surname) {
-        int length = surname.length();
-
-        if (surname.substring(length - 2).equals(as)) {
-            return surname.substring(0, length - 2) + aite;
-        } else if (surname.substring(length - 2).equals("is") | surname.substring(length - 2).equals("ys")) {
-            return surname.substring(0, length - 2) + yte;
-        } else if (surname.substring(length - 2).equals("us")) {
-            return surname.substring(0, length - 2) + ute;
-        } else if (surname.substring(length - 4).equals(iene)) {
-            return (surname.substring(0, length - 4) + aite);
+            if (StringUtils.countOccurrencesOf("aeėuūio", String.valueOf(thirdFromBehindLetterOfSurname)) == 0) {
+                return surname.substring(0, surname.length() - 2) + iene;
+            } else {
+                return surname.substring(0, surname.length() - 3) + iene;
+            }
         }
 
-        return specialPerson;
-    }
+        private String getSurnameForGirlFromFatherOrWoman (String surname){
+            int length = surname.length();
 
-    private void isCorrectName(String name) {
-        if (StringUtils.countOccurrencesOf(name, " ") > 1) {
-            throw new MoreThenOneAllowedSymbolInNameException();
+            if (surname.substring(length - 2).equals(as)) {
+                return surname.substring(0, length - 2) + aite;
+            } else if (surname.substring(length - 2).equals("is") | surname.substring(length - 2).equals("ys")) {
+                return surname.substring(0, length - 2) + yte;
+            } else if (surname.substring(length - 2).equals("us")) {
+                return surname.substring(0, length - 2) + ute;
+            } else if (surname.substring(length - 4).equals(iene)) {
+                return (surname.substring(0, length - 4) + aite);
+            }
+
+            return specialPerson;
+        }
+
+        private void isCorrectName (String name){
+            if (StringUtils.countOccurrencesOf(name, " ") > 1) {
+                throw new MoreThenOneAllowedSymbolInNameException();
+            }
+        }
+
+        private void isCorrectSurname (String surname){
+            if (StringUtils.countOccurrencesOf(surname, "-") > 1) {
+                throw new MoreThenOneAllowedSymbolInSurnameException();
+            }
         }
     }
-
-    private void isCorrectSurname(String surname) {
-        if (StringUtils.countOccurrencesOf(surname, "-") > 1) {
-            throw new MoreThenOneAllowedSymbolInSurnameException();
-        }
-    }
-}

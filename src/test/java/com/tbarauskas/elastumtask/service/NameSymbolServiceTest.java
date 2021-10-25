@@ -88,10 +88,10 @@ class NameSymbolServiceTest {
 
     @Test
     void testGetSurnameForRelativeSearchIfFromFemaleWithFamilySurnameToMaleDaughterYteBrother() {
-        String surname = nameService.getSurnameForRelativeSearch("Barauskytė", Kinship.SISTER,
+        String surname = nameService.getSurnameForRelativeSearch("Laukaitytė", Kinship.SISTER,
                 Kinship.BROTHER);
 
-        assertEquals(surnameMale, surname);
+        assertEquals("Laukaitis", surname);
     }
 
     @Test

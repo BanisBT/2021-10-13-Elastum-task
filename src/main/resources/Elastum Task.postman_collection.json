@@ -27,19 +27,43 @@
 					"response": []
 				},
 				{
-					"name": "GetRelatives",
+					"name": "GetAllPersonsWithParam",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{url}}/persons/relative/2",
+							"raw": "{{url}}/persons/list?sortBy=surname",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"persons",
-								"relative",
-								"2"
+								"list"
+							],
+							"query": [
+								{
+									"key": "sortBy",
+									"value": "surname"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetRelatives",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/persons/12/relative",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"persons",
+								"12",
+								"relative"
 							]
 						}
 					},
@@ -64,18 +88,18 @@
 					"response": []
 				},
 				{
-					"name": "GetPersonByIdIfNotExist Copy",
+					"name": "GetPersonByIdIfNotExist",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{url}}/persons/13",
+							"raw": "{{url}}/persons/99",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
 								"persons",
-								"13"
+								"99"
 							]
 						}
 					},

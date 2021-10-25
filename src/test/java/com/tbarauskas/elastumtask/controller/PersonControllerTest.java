@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -47,14 +48,64 @@ class PersonControllerTest {
                 .andReturn();
 
         List<PersonResponseDTO> personDTOList = objectMapper.readValue(result.getResponse().getContentAsString(),
-                new TypeReference<>() {});
+                new TypeReference<>() {
+                });
 
-        assertEquals(19, personDTOList.size());
+        assertEquals(30, personDTOList.size());
+    }
+
+    @Test
+    void testGetAllPersonsSortByName() throws Exception {
+        MvcResult result = mockMvc.perform(get("/persons/list")
+                        .param("sortBy", "name"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<PersonResponseDTO> personDTOList = objectMapper.readValue(result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+
+        for (int i = 0; i < personDTOList.size() - 1; i++) {
+            assertTrue(personDTOList.get(i).getName().compareTo(personDTOList.get(i + 1).getName()) <= 0);
+        }
+    }
+
+    @Test
+    void testGetAllPersonsSortBySurname() throws Exception {
+        MvcResult result = mockMvc.perform(get("/persons/list")
+                        .param("sortBy", "surname"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<PersonResponseDTO> personDTOList = objectMapper.readValue(result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+
+        for (int i = 0; i < personDTOList.size() - 1; i++) {
+            assertTrue(personDTOList.get(i).getSurname().compareTo(personDTOList.get(i + 1).getSurname()) <= 0);
+        }
+    }
+
+    @Test
+    void testGetAllPersonsSortByBirthDate() throws Exception {
+        MvcResult result = mockMvc.perform(get("/persons/list")
+                        .param("sortBy", "birthDate"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        List<PersonResponseDTO> personDTOList = objectMapper.readValue(result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+
+        for (int i = 0; i < personDTOList.size() - 1; i++) {
+            assertTrue(personDTOList.get(i).getBirthDate().isBefore(personDTOList.get(i + 1).getBirthDate()) |
+                    personDTOList.get(i).getBirthDate().isEqual(personDTOList.get(i + 1).getBirthDate()));
+        }
     }
 
     @Test
     void testGetPerson() throws Exception {
-        MvcResult result = mockMvc.perform(get("/persons/{id}", 4L))
+        MvcResult result = mockMvc.perform(get("/persons/{id}", 8L))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -62,7 +113,7 @@ class PersonControllerTest {
                 PersonResponseDTO.class);
 
         assertEquals("Nijole", person.getName());
-        assertEquals("Kliutis", person.getSurname());
+        assertEquals("Sakutė", person.getSurname());
     }
 
     @Test
@@ -82,8 +133,8 @@ class PersonControllerTest {
         PersonRequestDTO personDTO = new PersonRequestDTO("Aldona", "Gervuogiene", date);
 
         MvcResult result = mockMvc.perform(post("/persons/create")
-                .content(objectMapper.writeValueAsString(personDTO))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(personDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andReturn();
 
@@ -103,8 +154,8 @@ class PersonControllerTest {
         PersonRequestDTO personDTO = new PersonRequestDTO("Jurgis8", "Jurgelenas", date);
 
         MvcResult result = mockMvc.perform(post("/persons/create")
-                .content(objectMapper.writeValueAsString(personDTO))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(personDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
@@ -119,8 +170,8 @@ class PersonControllerTest {
         PersonRequestDTO personDTO = new PersonRequestDTO("J", "Jurgelenas", date);
 
         MvcResult result = mockMvc.perform(post("/persons/create")
-                .content(objectMapper.writeValueAsString(personDTO))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(personDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
@@ -135,8 +186,8 @@ class PersonControllerTest {
         PersonRequestDTO personDTO = new PersonRequestDTO("Jurgita", "Jurgelenaite Meidiene", date);
 
         MvcResult result = mockMvc.perform(post("/persons/create")
-                .content(objectMapper.writeValueAsString(personDTO))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(personDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
@@ -151,8 +202,8 @@ class PersonControllerTest {
         PersonRequestDTO personDTO = new PersonRequestDTO("Jurgita", "Jurgelenaite-Meidiene-Justa", date);
 
         MvcResult result = mockMvc.perform(post("/persons/create")
-                .content(objectMapper.writeValueAsString(personDTO))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(personDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
@@ -169,8 +220,8 @@ class PersonControllerTest {
                 "Jurgelenaite-Meidiene", date);
 
         MvcResult result = mockMvc.perform(post("/persons/create")
-                .content(objectMapper.writeValueAsString(personDTO))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(personDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
@@ -180,4 +231,18 @@ class PersonControllerTest {
         assertEquals("Name can't be more then two words and no spacing allowed in front or end of name",
                 error.getMessage());
     }
+
+    @Test
+    void testGetPersonsRelativesHasNo() throws Exception {
+        MvcResult result = mockMvc.perform(get("/persons/{id}/relative", 30L))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        ErrorHandler error = objectMapper.readValue(result.getResponse().getContentAsString(), ErrorHandler.class);
+
+        assertEquals(HttpStatus.BAD_REQUEST.value(), error.getStatus());
+        assertEquals("No relative found", error.getMessage());
+    }
+
+
 }
